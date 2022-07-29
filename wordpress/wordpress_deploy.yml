@@ -251,7 +251,7 @@
 
     - name: 상태체크 job 실행
       awx.awx.job_launch:
-        job_template: "wordpress_check"
+        job_template: "워드프레스 - 상태체크"
         controller_host: "http://{{ genie_ip }}:80"
         controller_username: admin
         controller_password: "{{ admin_password.stdout }}"
@@ -260,7 +260,7 @@
       awx.awx.schedule:
         name: wordpress_check
         state: present
-        unified_job_template: wordpress_check
+        unified_job_template: 워드프레스 - 상태체크
         rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
         controller_host: "http://{{ genie_ip }}:80"
         controller_username: admin
