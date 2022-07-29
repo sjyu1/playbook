@@ -258,7 +258,7 @@
 
     - name: Genie job 스케줄러 생성
       awx.awx.schedule:
-        name: wordpress_check
+        name: 워드프레스 - 상태체크
         state: present
         unified_job_template: 워드프레스 - 상태체크
         rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
