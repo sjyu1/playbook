@@ -52,6 +52,7 @@
       -n "{{ service_group }}" \
       -d "Wordpress is an online open source website authoring tool written in PHP." \
       -ai "http://{{ vm.instances[0].public_ip }}/wordpress"
+      -ai "<a href='http://{{ vm.instances[0].public_ip }}/wordpress' target='_blank'"
     when: list_jsondata.listautomationdeployedresourceresponse == {}
 
   # 그룹조회
