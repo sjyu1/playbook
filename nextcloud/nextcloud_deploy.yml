@@ -97,67 +97,7 @@
 
 
 
-  - name: AWX 초기 관리자 패스워드 추출
-    shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
-    register: admin_password
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-  - name: Create nextcloud state check playbook
-    awx.awx.job_template:
-      name: 넥스트클라우드 - 상태체크 - {{ uuid }}
-      description: 넥스트클라우드의 서비스 상태를 체크합니다.
-      job_type: "run"
-      inventory: genie_inventory
-      project: playbook_project
-      playbook: nextcloud/nextcloud_check.yml
-      credentials:
-        - "automation_controller_credential"
-      state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
-      controller_username: admin
-      controller_password: "{{ admin_password.stdout }}"
-      extra_vars: 
-        instance_name: "{{ instance_name }}"
-        uuid: "{{ uuid }}"
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-  - name: Create nextcloud delete playbook
-    awx.awx.job_template:
-      name: 넥스트클라우드 - 삭제 - {{ uuid }}
-      description: 넥스트클라우드를 삭제합니다.
-      job_type: "run"
-      inventory: genie_inventory
-      project: playbook_project
-      playbook: nextcloud/nextcloud_destroy.yml
-      credentials:
-        - "automation_controller_credential"
-      state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
-      controller_username: admin
-      controller_password: "{{ admin_password.stdout }}"
-      extra_vars: 
-        instance_name: "{{ instance_name }}"
-        uuid: "{{ uuid }}"
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-  # - name: 상태체크 job 실행
-  #   awx.awx.job_launch:
-  #     job_template: 넥스트클라우드 - 상태체크 - {{ uuid }}
-  #     controller_host: "http://{{ genie_ip }}:80"
-  #     controller_username: admin
-  #     controller_password: "{{ admin_password.stdout }}"
-  #   delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-  - name: Genie job 스케줄러 생성
-    awx.awx.schedule:
-      name: 넥스트클라우드 - 상태체크 - {{ uuid }}
-      state: present
-      unified_job_template: 넥스트클라우드 - 상태체크 - {{ uuid }}
-      rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
-      controller_host: "http://{{ genie_ip }}:80"
-      controller_username: admin
-      controller_password: "{{ admin_password.stdout }}"
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
+  
 
 
 #=============================================================
@@ -340,3 +280,74 @@
         - "http"
         - "https"
 
+
+- name: 서비스 상태체크 및 삭제 템플릿생성, 스케줄러 생성
+  hosts: genie_vm
+  vars:
+    base_path: "genie"
+    genie_ip: "localhost"
+    instance_nm: "{{ instance_name }}-{{ uuid }}"
+  gather_facts: no
+  tasks:
+  
+  - name: AWX 초기 관리자 패스워드 추출
+    shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
+    register: admin_password
+    # delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
+
+  - name: Create nextcloud state check playbook
+    awx.awx.job_template:
+      name: 넥스트클라우드 - 상태체크 - {{ uuid }}
+      description: 넥스트클라우드의 서비스 상태를 체크합니다.
+      job_type: "run"
+      inventory: genie_inventory
+      project: playbook_project
+      playbook: nextcloud/nextcloud_check.yml
+      credentials:
+        - "automation_controller_credential"
+      state: "present"
+      controller_host: "http://{{ genie_ip }}:80"
+      controller_username: admin
+      controller_password: "{{ admin_password.stdout }}"
+      extra_vars: 
+        instance_name: "{{ instance_name }}"
+        uuid: "{{ uuid }}"
+    # delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
+
+  - name: Create nextcloud delete playbook
+    awx.awx.job_template:
+      name: 넥스트클라우드 - 삭제 - {{ uuid }}
+      description: 넥스트클라우드를 삭제합니다.
+      job_type: "run"
+      inventory: genie_inventory
+      project: playbook_project
+      playbook: nextcloud/nextcloud_destroy.yml
+      credentials:
+        - "automation_controller_credential"
+      state: "present"
+      controller_host: "http://{{ genie_ip }}:80"
+      controller_username: admin
+      controller_password: "{{ admin_password.stdout }}"
+      extra_vars: 
+        instance_name: "{{ instance_name }}"
+        uuid: "{{ uuid }}"
+    # delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
+
+  # - name: 상태체크 job 실행
+  #   awx.awx.job_launch:
+  #     job_template: 넥스트클라우드 - 상태체크 - {{ uuid }}
+  #     controller_host: "http://{{ genie_ip }}:80"
+  #     controller_username: admin
+  #     controller_password: "{{ admin_password.stdout }}"
+  #   delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
+
+  - name: Genie job 스케줄러 생성
+    awx.awx.schedule:
+      name: 넥스트클라우드 - 상태체크 - {{ uuid }}
+      state: present
+      unified_job_template: 넥스트클라우드 - 상태체크 - {{ uuid }}
+      rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
+      controller_host: "http://{{ genie_ip }}:80"
+      controller_username: admin
+      controller_password: "{{ admin_password.stdout }}"
+    # delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
