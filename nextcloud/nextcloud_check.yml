@@ -144,6 +144,6 @@
       -ak "{{ lookup('env', 'MOLD_API_KEY') }}" \
       -sk "{{ lookup('env', 'MOLD_SECRET_KEY') }}" \
       -gid "{{ list2_jsondata.listautomationdeployedresourceresponse.automationdeployedresource[0].id }}" \
-      -ai "<a href='http://{{ vm.instances[0].public_ip }}/nextcloud' target='_blank', Initial login id/pw( user/password ), It is Recommended that you change initial password for improved security." \
+      -ai "<a href='http://{{ vm.instances[0].public_ip }}/nextcloud' target='_blank'> Click this link here to access</a> <br> Initial login id/pw( user/password ), It is Recommended that you change initial password for improved security." \
       -s "Inactive"
     when: httpd_state_result.stdout != "active" or mysqld_state_result.stdout != "active"
