@@ -1,0 +1,62 @@
+---
+### Deploy VirtualMachine ###
+- name: Genie를 활용한 Mold VM 배포
+  hosts: localhost
+  gather_facts: no
+  vars:
+    # base_path: "genie"
+    # genie_ip: "localhost"
+    # db_instance_name: "db-deploy-vm-9qkj6"
+    # was_instance_name: "was-deploy-vm-9qkj6"
+    # web_instance_name: "web-deploy-vm-9qkj6"
+  tasks:
+
+  - name: instance명에 uuid 추가
+    set_fact:
+      db_instance: "db-deploy-vm-9qkj6"
+
+  - name: 배포 가상머신 인메모리 inventory에 등록
+    add_host:
+      hostname: "10.1.1.146"
+      groups:
+        - db_deployVmIp
+
+  
+  # - name: 배포 가상머신 ip 정보 수집
+  #   debug:
+  #     msg: "10.1.1.100"
+
+  - name: 배포 가상머신 인메모리 inventory에 등록
+    add_host:
+      hostname: "10.1.1.100"
+      groups:
+        - was_deployVmIp
+
+  # - name: 배포 가상머신 ip 정보 수집
+  #   debug:
+  #     msg: "10.1.1.217"
+
+  - name: 배포 가상머신 인메모리 inventory에 등록
+    add_host:
+      hostname: "10.1.1.217"
+      groups:
+        - web_deployVmIp
+
+  - name: Install Java 8
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    delegate_to: 10.1.1.100
+
+  # - include_tasks: eGov_install.yml
+  #   vars:
+  #     db_instance_nm: "{{ db_instance }}"
+  #     was_instance_nm: "was-deploy-vm-9qkj6"
+  #     web_instance_nm: "web-deploy-vm-9qkj6"
+
+# - name: eGov_install
+#   ansible.builtin.import_playbook: eGov_install.yml
+#   vars:
+#     db_instance_nm: "{{ db_instance }}"
+#     was_instance_nm: "was-deploy-vm-9qkj6"
+#     web_instance_nm: "web-deploy-vm-9qkj6"
