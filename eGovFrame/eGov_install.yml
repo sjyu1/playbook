@@ -1,0 +1,164 @@
+### Deploy WAS Server ##
+- name: Deploy WAS Server
+  hosts: was_deployVmIp
+  gather_facts: no
+  vars:
+    tomcat_port: "8080"
+    tomcat_protocol: "tcp"
+
+    # Register db server ip in /etc/hosts for context-datasource.xml
+    # db_instance_nm: "{{ db_instance_name }}"
+  tasks:
+  
+  # Install Tomcat
+  - name: Install Java 8
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+
+  - name: Download and Unarchive Tomcat
+    ansible.builtin.unarchive:
+      # src: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.64/bin/apache-tomcat-9.0.64.tar.gz"
+      src: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65.tar.gz"
+      dest: /usr/local
+      remote_src: yes
+      # extra_opts: "--strip-components=1"
+      # creates: /usr/local/bin
+
+  - name: Download Tomcat service file
+    get_url:
+      url: "https://images.ablecloud.io/genie/eGovFrame/tomcat.service"
+      dest: "/etc/systemd/system/"
+    
+  - name: Start tomcat service
+    systemd: name=tomcat state=restarted enabled=yes
+
+  - name: Delete ROOT Directory
+    command: rm -rf /usr/local/apache-tomcat-9.0.65/webapps/ROOT
+  #     ansible.builtin.file:
+  #       path: "/usr/local/apache-tomcat-9.0.65/webapps/ROOT"
+  #       state: absent
+
+  - name: Download ROOT.war
+    get_url:
+      url: "https://images.ablecloud.io/genie/eGovFrame/ROOT.war"
+      dest: "/usr/local/apache-tomcat-9.0.65/webapps/"
+
+  - name: 배포한 DB 가상머신 정보 수집 ({{ db_instance_nm }})
+    cs_instance_info:
+      api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
+      api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
+      api_secret: "{{ lookup('env', 'MOLD_SECRET_KEY') }}"
+      name: "{{ db_instance_nm }}"
+    delegate_to: localhost
+    register: db_vm
+
+  - name: 배포 가상머신 ip 정보 수집
+    debug:
+      msg: "{{ db_vm.instances[0].nic[0].ipaddress }}"
+
+  - name: lineinfile to /etc/hosts
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ db_vm.instances[0].nic[0].ipaddress }} db-server"
+
+  # - name: Replace between the expressions
+  #   ansible.builtin.replace:
+  #     path: /usr/local/apache-tomcat-9.0.65/webapps/ROOT/src/main/resources/egovframework/spring/context-datasource.xml
+  #     after: "{{ vm.instances[0].nic[0].ipaddress }}"
+  #     before: "dbserver"
+
+  - name: Start tomcat service
+    systemd: name=tomcat state=restarted
+
+  - name: Allow port
+    ansible.posix.firewalld:
+      port: "{{ tomcat_port }}/{{ tomcat_protocol }}"
+      permanent: yes
+      state: enabled
+
+  - name: Start firewalld service
+    systemd: name=firewalld state=restarted
+
+
+### Deploy Web Server ###
+- name: Deploy Web Server
+  hosts: web_deployVmIp
+  vars:
+    nginx_port: "8080"
+    nginx_protocol: "tcp"
+
+    # Register was server ip in /etc/hosts for nginx configuration
+    # was_instance_nm: "{{ was_instance_name }}"
+    
+  gather_facts: no
+  tasks:
+
+  # Install nginx
+  - name: Install nginx
+    ansible.builtin.package:
+      name: nginx
+      state: present
+
+  - name: Download nginx-was conf file
+    get_url:
+      url: "https://images.ablecloud.io/genie/eGovFrame/nginx-was.conf"
+      dest: "/etc/nginx/conf.d/"
+  
+  - name: 배포한 가상머신 정보 수집("{{ was_instance_nm }}")
+    cs_instance_info:
+      api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
+      api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
+      api_secret: "{{ lookup('env', 'MOLD_SECRET_KEY') }}"
+      name: "{{ was_instance_nm }}"
+    delegate_to: localhost
+    register: was_vm
+
+  - name: 배포 가상머신 ip 정보 수집
+    debug:
+      msg: "{{ was_vm.instances[0].nic[0].ipaddress }}"
+
+  - name: lineinfile to /etc/hosts
+    lineinfile:
+      path: /etc/hosts
+      line: "{{ was_vm.instances[0].nic[0].ipaddress }} was-server"
+
+  - name: Set httpd_can_network_connect flag on
+    ansible.posix.seboolean:
+      name: httpd_can_network_connect
+      state: yes
+      persistent: yes
+
+  - name: Start nginx service
+    systemd: name=nginx state=restarted
+
+  # css, images file download
+  - name: Download css file
+    get_url:
+      url: "https://images.ablecloud.io/genie/eGovFrame/css.zip"
+      dest: "/tmp/css.zip"
+  - name: Extract css archive
+    ansible.builtin.unarchive:
+      src: "/tmp/css.zip"
+      dest: /usr/share/nginx/html/
+      remote_src: yes
+
+  - name: Download images file
+    get_url:
+      url: "https://images.ablecloud.io/genie/eGovFrame/images.zip"
+      dest: "/tmp/images.zip"
+  - name: Extract images archive
+    ansible.builtin.unarchive:
+      src: "/tmp/images.zip"
+      dest: /usr/share/nginx/html/
+      remote_src: yes
+
+  - name: Allow port
+    ansible.posix.firewalld:
+      port: "{{ nginx_port }}/{{ nginx_protocol }}"
+      permanent: yes
+      state: enabled
+
+  - name: Start firewalld service
+    systemd: name=firewalld state=restarted
+
