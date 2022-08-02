@@ -16,7 +16,7 @@
     set_fact:
       instance_nm: "{{ instance_name }}-{{ uuid }}"
 
-  - name: 가상머신 생성 "{{ instance_nm }}"
+  - name: 가상머신 생성 ("{{ instance_nm }}")
     cs_instance:
       api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
       api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"

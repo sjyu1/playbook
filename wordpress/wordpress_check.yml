@@ -1,10 +1,10 @@
 ---
 - name: State Check
   hosts: localhost
-  vars:
-    instance_nm: "wordpress-deploy-vm"
-    service_group: "Wordpress"
   gather_facts: no
+  vars:
+    service_group: "Wordpress-{{ uuid }}"
+    instance_nm: "{{ instance_name }}-{{ uuid }}"
   tasks:
 
   ### Info VirtualMachine ###

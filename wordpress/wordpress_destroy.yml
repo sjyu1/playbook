@@ -1,11 +1,11 @@
 ---
 - name: Genie를 활용한 Mold VM 삭제
   hosts: localhost
-  vars:
-    instance_nm: "wordpress-deploy-vm"
-    service_group: "Wordpress"
   gather_facts: no
   ignore_errors: yes
+  vars:
+    service_group: "Wordpress-{{ uuid }}"
+    instance_nm: "{{ instance_name }}-{{ uuid }}"
   tasks:
 
   ### Delete resource package  ###
@@ -63,23 +63,32 @@
 
 - name: 서비스 상태체크 스케줄러 삭제
   hosts: genie_vm
+  gather_facts: no
+  ignore_errors: yes
   vars:
     base_path: "genie"
     genie_ip: "localhost"
-  gather_facts: no
-  ignore_errors: yes
+    uuid: "{{ uuid }}"
   tasks:
   
-    - name: AWX 초기 관리자 패스워드 추출
-      shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
-      register: admin_password
+  - name: AWX 초기 관리자 패스워드 추출
+    shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
+    register: admin_password
 
-    - name: Genie job 스케줄러 삭제
-      awx.awx.schedule:
-        name: wordpress_check
-        state: absent
-        unified_job_template: "워드프레스 - 상태체크"
-        # rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
-        controller_host: "http://{{ genie_ip }}:80"
-        controller_username: admin
-        controller_password: "{{ admin_password.stdout }}"
+  - name: Genie job 스케줄러 삭제 - {{ uuid }}
+    awx.awx.schedule:
+      name: 워드프레스 - 상태체크 - {{ uuid }}
+      state: absent
+      unified_job_template: "워드프레스 - 상태체크 - {{ uuid }}"
+      # rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
+      controller_host: "http://{{ genie_ip }}:80"
+      controller_username: admin
+      controller_password: "{{ admin_password.stdout }}"
+
+  - name: Delete wordpress state check playbook
+    awx.awx.job_template:
+      name: 워드프레스 - 상태체크 - {{ uuid }}
+      state: "absent"
+      controller_host: "http://{{ genie_ip }}:80"
+      controller_username: admin
+      controller_password: "{{ admin_password.stdout }}"
