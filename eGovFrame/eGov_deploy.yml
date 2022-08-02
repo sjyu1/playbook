@@ -42,11 +42,17 @@
       groups:
         - web_deployVmIp
 
-  - include_tasks: eGov_install.yml
-    vars:
-      db_instance_nm: "{{ db_instance }}"
-      was_instance_nm: "was-deploy-vm-9qkj6"
-      web_instance_nm: "web-deploy-vm-9qkj6"
+  - name: Install Java 8
+    yum:
+      name: java-1.8.0-openjdk
+      state: present
+    delegate_to: was_deployVmIp
+
+  # - include_tasks: eGov_install.yml
+  #   vars:
+  #     db_instance_nm: "{{ db_instance }}"
+  #     was_instance_nm: "was-deploy-vm-9qkj6"
+  #     web_instance_nm: "web-deploy-vm-9qkj6"
 
 # - name: eGov_install
 #   ansible.builtin.import_playbook: eGov_install.yml
