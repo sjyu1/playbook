@@ -420,9 +420,9 @@
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars: 
-        db_instance_nm: "{{ db_instance_name }}"
-        was_instance_nm: "{{ was_instance_name }}"
-        web_instance_nm: "{{ web_instance_name }}"
+        db_instance_name: "{{ db_instance_name }}"
+        was_instance_name: "{{ was_instance_name }}"
+        web_instance_name: "{{ web_instance_name }}"
         uuid: "{{ uuid }}"
     delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
 
