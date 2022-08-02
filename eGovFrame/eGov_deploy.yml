@@ -66,10 +66,10 @@
       networks: "{{ lookup('env', 'AC_NETWORK_NAME') }}"
     register: was_vm
 
-  # - name: 생성한 가상머신이 부팅이 완료될 때까지 대기
-  #   wait_for_connection:
-  #     delay: 20
-  #     timeout: 300
+  - name: 생성한 가상머신이 부팅이 완료될 때까지 대기
+    wait_for_connection:
+      delay: 20
+      timeout: 300
 
   - name: 배포 가상머신 ip 정보 수집
     debug:
@@ -81,9 +81,9 @@
       groups:
         - was_deployVmIp
 
-  - name: WAS 가상머신 IP
-    set_fact:
-      was_vm_default_ip: "{{ was_vm.default_ip }}"
+  # - name: WAS 가상머신 IP
+  #   set_fact:
+  #     was_vm_default_ip: "{{ was_vm.default_ip }}"
 
   - name: 배포 가상머신 ip 정보 수집
     debug:
@@ -94,7 +94,7 @@
     yum:
       name: java-1.8.0-openjdk
       state: present
-    delegate_to: was_vm_default_ip
+    delegate_to: "{{ was_vm.default_ip }}"
 
   - name: Download and Unarchive Tomcat
     ansible.builtin.unarchive:
