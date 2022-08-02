@@ -10,6 +10,10 @@
     # db_instance_nm: "{{ db_instance_name }}"
   tasks:
   
+  - name: test
+    debug:
+      msg: "{{ test }}"
+
   # Install Tomcat
   - name: Install Java 8
     yum:
