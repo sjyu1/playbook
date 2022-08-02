@@ -13,7 +13,7 @@
 
   - name: instance명에 uuid 추가
     set_fact:
-      db_instance_name: "db-deploy-vm-9qkj6"
+      db_instance: "db-deploy-vm-9qkj6"
 
   - name: 배포 가상머신 인메모리 inventory에 등록
     add_host:
@@ -45,6 +45,6 @@
 - name: eGov_install
   ansible.builtin.import_playbook: eGov_install.yml
   vars:
-    db_instance_nm: "{{ db_instance_name }}"
+    db_instance_nm: "{{ db_instance }}"
     was_instance_nm: "was-deploy-vm-9qkj6"
     web_instance_nm: "web-deploy-vm-9qkj6"
