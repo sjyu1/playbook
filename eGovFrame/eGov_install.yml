@@ -12,7 +12,7 @@
   
   - name: test
     debug:
-      msg: "{{ test }}"
+      msg: "{{ db_instance_nm }}"
 
   # Install Tomcat
   - name: Install Java 8
