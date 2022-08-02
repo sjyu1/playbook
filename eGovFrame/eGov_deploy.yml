@@ -157,6 +157,7 @@
   - name: AWX 초기 관리자 패스워드 추출
     shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
     register: admin_password
+    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
 
   - name: Create eGovFrame state check playbook
     awx.awx.job_template:
