@@ -4,7 +4,6 @@
   hosts: localhost
   gather_facts: no
   vars:
-    # instance_nm: "{{ instance_name }}-{{ uuid }}"
     base_path: "genie"
     genie_ip: "localhost"
   tasks:

@@ -41,6 +41,8 @@
   #     msg: "{{ list_jsondata }}"
 
   # 그룹등록
+  # access info에 등록되는 데이터 양식
+  # http://IP 주소 <br> 으로 띄어쓰기에 유의하여 등록되야 합니다. 첫번 째 "http://"으로 시작되는 주소를 활용해 하이퍼링크를 생성합니다.
   - name: Register Group
     ansible.builtin.command: python2 /home/runner/mold_genie_api.py \
       -c addDeployedResourceGroup \
@@ -51,8 +53,6 @@
       -acid "{{ lookup('env', 'AC_ID') }}" \
       -n "{{ service_group }}" \
       -d "NextCloud is client-server software for developing and using file hosting services." \
-      # access info에 등록되는 데이터 양식
-      # http://IP 주소 <br> 으로 띄어쓰기에 유의하여 등록되야 합니다. 첫번 째 "http://"으로 시작되는 주소를 활용해 하이퍼링크를 생성합니다.
       -ai "http://{{ vm.instances[0].public_ip }}/nextcloud <br> Initial login id/pw( user/password ) <br> It is Recommended that you change initial password for improved security."
     when: list_jsondata.listautomationdeployedresourceresponse == {}
 
