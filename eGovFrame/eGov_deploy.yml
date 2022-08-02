@@ -17,22 +17,22 @@
       was_instance_nm: "{{ was_instance_name }}-{{ uuid }}"
       web_instance_nm: "{{ web_instance_name }}-{{ uuid }}"
 
-  - name: DB 가상머신 생성 ({{ db_instance_nm }})
-    cs_instance:
-      api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
-      api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
-      api_secret: "{{ lookup('env', 'MOLD_SECRET_KEY') }}"
-      zone: "{{ lookup('env', 'MOLD_ZONE_NAME') }}"
-      name: "{{ db_instance_nm }}"
-      template: "{{ instance_temp }}"
-      service_offering: "{{ instance_computeoffer }}"
-      ssh_key: "{{ lookup('env', 'MOLD_SSH_KEYPAIR') }}"
-      user_data: |
-          #cloud-config
-          disable_root: false
-          ssh_pwauth: true
-      networks: "{{ lookup('env', 'AC_NETWORK_NAME') }}"
-    register: db_vm
+  # - name: DB 가상머신 생성 ({{ db_instance_nm }})
+  #   cs_instance:
+  #     api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
+  #     api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
+  #     api_secret: "{{ lookup('env', 'MOLD_SECRET_KEY') }}"
+  #     zone: "{{ lookup('env', 'MOLD_ZONE_NAME') }}"
+  #     name: "{{ db_instance_nm }}"
+  #     template: "{{ instance_temp }}"
+  #     service_offering: "{{ instance_computeoffer }}"
+  #     ssh_key: "{{ lookup('env', 'MOLD_SSH_KEYPAIR') }}"
+  #     user_data: |
+  #         #cloud-config
+  #         disable_root: false
+  #         ssh_pwauth: true
+  #     networks: "{{ lookup('env', 'AC_NETWORK_NAME') }}"
+  #   register: db_vm
 
   # - name: 생성한 가상머신이 부팅이 완료될 때까지 대기
   #   wait_for_connection:
@@ -84,6 +84,10 @@
   - name: WAS 가상머신 IP
     set_fact:
       was_vm_default_ip: "{{ was_vm.default_ip }}"
+
+  - name: 배포 가상머신 ip 정보 수집
+    debug:
+      msg: "{{ was_vm_default_ip }}"
 
   # Install Tomcat
   - name: Install Java 8
