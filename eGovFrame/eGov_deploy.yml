@@ -45,6 +45,6 @@
 - name: eGov_install
   ansible.builtin.import_playbook: eGov_install.yml
   vars:
-    db_instance_nm: "{{ db_instance }}"
+    db_instance: "{{ db_instance }}"
     was_instance_nm: "was-deploy-vm-9qkj6"
     web_instance_nm: "web-deploy-vm-9qkj6"
