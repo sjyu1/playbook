@@ -27,6 +27,7 @@
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
       extra_vars: 
+        instance_name: "wordpress-deploy-vm"
         instance_temp: "CentOS-8-cloudinit"
         instance_computeoffer: "2C-4GB-RBD"
 
