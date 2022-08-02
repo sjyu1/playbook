@@ -17,7 +17,7 @@
       was_instance_nm: "{{ was_instance_name }}-{{ uuid }}"
       web_instance_nm: "{{ web_instance_name }}-{{ uuid }}"
 
-  - name: DB 가상머신 생성 ("{{ db_instance_nm }}")
+  - name: DB 가상머신 생성 ({{ db_instance_nm }})
     cs_instance:
       api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
       api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
@@ -49,7 +49,7 @@
       groups:
         - db_deployVmIp
 
-  - name: WAS 가상머신 생성 ("{{ was_instance_nm }}")
+  - name: WAS 가상머신 생성 ({{ was_instance_nm }})
     cs_instance:
       api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
       api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
@@ -81,7 +81,7 @@
       groups:
         - was_deployVmIp
 
-  - name: WEB 가상머신 생성 ("{{ web_instance_nm }}")
+  - name: WEB 가상머신 생성 ({{ web_instance_nm }})
     cs_instance:
       api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
       api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
@@ -217,6 +217,7 @@
       controller_host: "http://{{ genie_ip }}:80"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"
+    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
 
 ### Deploy DB Server ###
 - name: Deploy DB Server
