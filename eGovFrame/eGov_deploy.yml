@@ -295,9 +295,9 @@
       api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
       api_secret: "{{ lookup('env', 'MOLD_SECRET_KEY') }}"
       name: "{{ was_instance_nm }}"
-    register: localhost
-    delegate_to: "{{ web_vm.default_ip }}"
-
+    register: was_vm
+    delegate_to: localhost
+    
   - name: 배포 가상머신 ip 정보 수집
     debug:
       msg: "{{ was_vm.instances[0].nic[0].ipaddress }}"
