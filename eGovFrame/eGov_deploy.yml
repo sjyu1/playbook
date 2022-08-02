@@ -64,71 +64,71 @@
   #       - db_deployVmIp
 
   # Install MySQL
-    - name: Install MySQL Packages
-      yum: name={{ item }} update_cache=yes state=latest
-      loop: [ 'mysql-server', 'php-mysqlnd', 'python3-PyMySQL' ]
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Install MySQL Packages
+    yum: name={{ item }} update_cache=yes state=latest
+    loop: [ 'mysql-server', 'php-mysqlnd', 'python3-PyMySQL' ]
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Start mysqld service
-      systemd: name=mysqld state=started enabled=yes
-      delegate_to: "{{ db_vm.default_ip }}"
-        
-    - name: Set MySQL root Password
-      community.mysql.mysql_user:
-        name: root
-        password: "{{ mysql_root_password }}"
-        login_user: root
-        login_password: ""
-        state: present
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Start mysqld service
+    systemd: name=mysqld state=started enabled=yes
+    delegate_to: "{{ db_vm.default_ip }}"
+      
+  - name: Set MySQL root Password
+    community.mysql.mysql_user:
+      name: root
+      password: "{{ mysql_root_password }}"
+      login_user: root
+      login_password: ""
+      state: present
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Set MySQL root Grants
-      community.mysql.mysql_user:
-        name: root
-        password: "{{ mysql_root_password }}"
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
-        host: "{{ item }}"
-        priv: "*.*:ALL,GRANT"
-        state: present
-      with_items:
-        - localhost
-        - "%"
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Set MySQL root Grants
+    community.mysql.mysql_user:
+      name: root
+      password: "{{ mysql_root_password }}"
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+      host: "{{ item }}"
+      priv: "*.*:ALL,GRANT"
+      state: present
+    with_items:
+      - localhost
+      - "%"
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Create database
-      community.mysql.mysql_db:
-        name: "{{ mysql_db }}"
-        state: present
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Create database
+    community.mysql.mysql_db:
+      name: "{{ mysql_db }}"
+      state: present
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Download sql file
-      get_url:
-        url: "https://images.ablecloud.io/genie/eGovFrame/db.sql"
-        dest: /tmp/
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Download sql file
+    get_url:
+      url: "https://images.ablecloud.io/genie/eGovFrame/db.sql"
+      dest: /tmp/
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Restore database
-      community.mysql.mysql_db:
-        name: "{{ mysql_db }}"
-        state: import
-        login_user: root
-        login_password: "{{ mysql_root_password }}"
-        target: /tmp/db.sql
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Restore database
+    community.mysql.mysql_db:
+      name: "{{ mysql_db }}"
+      state: import
+      login_user: root
+      login_password: "{{ mysql_root_password }}"
+      target: /tmp/db.sql
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Allow port
-      ansible.posix.firewalld:
-        port: "{{ db_port }}/{{ db_protocol }}"
-        permanent: yes
-        state: enabled
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Allow port
+    ansible.posix.firewalld:
+      port: "{{ db_port }}/{{ db_protocol }}"
+      permanent: yes
+      state: enabled
+    delegate_to: "{{ db_vm.default_ip }}"
 
-    - name: Start firewalld service
-      systemd: name=firewalld state=restarted
-      delegate_to: "{{ db_vm.default_ip }}"
+  - name: Start firewalld service
+    systemd: name=firewalld state=restarted
+    delegate_to: "{{ db_vm.default_ip }}"
 
 
   ### WAS VirtualMachine ###
