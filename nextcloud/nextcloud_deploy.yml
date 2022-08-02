@@ -9,12 +9,12 @@
     genie_ip: "localhost"
   tasks:
 
-  - name: debug uuid stdout
+  - name: uuid 생성
     set_fact:
       uuid: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=5') }}"
-  - name: debug instance_nm stdout
+  - name: instance명에 uuid 추가
     set_fact:
-      instance_nm: "{{ instance_name }}-{{uuid}}"
+      instance_nm: "{{ instance_name }}-{{ uuid }}"
 
   - name: 가상머신 생성 "{{ instance_nm }}"
     cs_instance:
@@ -95,7 +95,7 @@
         - {port: 22, protocol: tcp}
     delegate_to: localhost
 
-
+  #=============================================================
 
   - name: AWX 초기 관리자 패스워드 추출
     shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
@@ -159,9 +159,7 @@
       controller_password: "{{ admin_password.stdout }}"
     delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
 
-
 #=============================================================
-
 
 ### Deploy Nextcloud ###
 - name: Deploy Nextcloud
