@@ -1,12 +1,12 @@
 ---
 - name: State Check
   hosts: localhost
-  vars:
-    db_instance_nm: "tier-db-deploy-vm"
-    was_instance_nm: "tier-was-deploy-vm"
-    web_instance_nm: "tier-web-deploy-vm"
-    service_group: "3Tier"
   gather_facts: no
+  vars:
+    service_group: "eGov-WebSerivce-{{ uuid }}"
+    db_instance_nm: "{{ db_instance_name }}-{{ uuid }}"
+    was_instance_nm: "{{ was_instance_name }}-{{ uuid }}"
+    web_instance_nm: "{{ web_instance_name }}-{{ uuid }}"
   tasks:
 
   ### Info VirtualMachine ###

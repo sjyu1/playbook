@@ -1,13 +1,13 @@
 ---
 - name: Genie를 활용한 Mold VM 삭제
   hosts: localhost
-  vars:
-    db_instance_nm: "tier-db-deploy-vm"
-    was_instance_nm: "tier-was-deploy-vm"
-    web_instance_nm: "tier-web-deploy-vm"
-    service_group: "3Tier"
   gather_facts: no
   ignore_errors: yes
+  vars:
+    service_group: "eGov-WebSerivce-{{ uuid }}"
+    db_instance_nm: "{{ db_instance_name }}-{{ uuid }}"
+    was_instance_nm: "{{ was_instance_name }}-{{ uuid }}"
+    web_instance_nm: "{{ web_instance_name }}-{{ uuid }}"
   tasks:
 
   ### Delete resource package  ###
@@ -69,23 +69,32 @@
 
 - name: 서비스 상태체크 스케줄러 삭제
   hosts: genie_vm
+  gather_facts: no
+  ignore_errors: yes
   vars:
     base_path: "genie"
     genie_ip: "localhost"
-  gather_facts: no
-  ignore_errors: yes
+    uuid: "{{ uuid }}"
   tasks:
 
   - name: AWX 초기 관리자 패스워드 추출
     shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
     register: admin_password
 
-  - name: Genie job 스케줄러 삭제
+  - name: Genie job 스케줄러 삭제 - {{ uuid }}
     awx.awx.schedule:
-      name: tier_check
+      name: 전자정부프레임워크 웹서비스 - 상태체크 - {{ uuid }}
       state: absent
-      unified_job_template: "tier_check"
+      unified_job_template: 전자정부프레임워크 웹서비스 - 상태체크 - {{ uuid }}
       # rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
+      controller_host: "http://{{ genie_ip }}:80"
+      controller_username: admin
+      controller_password: "{{ admin_password.stdout }}"
+
+  - name: Delete eGovFrame state check playbook
+    awx.awx.job_template:
+      name: 전자정부프레임워크 웹서비스 - 상태체크 - {{ uuid }}
+      state: "absent"
       controller_host: "http://{{ genie_ip }}:80"
       controller_username: admin
       controller_password: "{{ admin_password.stdout }}"

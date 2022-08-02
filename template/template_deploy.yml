@@ -116,15 +116,15 @@
   #     controller_username: admin
   #     controller_password: "{{ admin_password.stdout }}"
 
-  # 3Tier
-  - name: Create 3tier deploy playbook
+  # eGovFrame
+  - name: Create eGovFrame deploy playbook
     awx.awx.job_template:
       name: 전자정부프레임워크 웹서비스 - 배포
       description: 전자정부프레임워크 웹서비스를 배포합니다. 서버는 물리적으로 3개의 계층으로 구분되며 WEB 서버(클라이언트 계층), WAS 서버(응용 계층), DB 서버(데이터 계층)로 구성됩니다.
       job_type: "run"
       inventory: Genie Inventory
       project: Genie Git Project
-      playbook: 3tier/tier_deploy.yml
+      playbook: eGovFrame/eGov_deploy.yml
       credentials:
         - "Automation Controller Credential"
       state: "present"
@@ -139,14 +139,14 @@
         instance_temp: "CentOS-8-cloudinit"
         instance_computeoffer: "2C-4GB-RBD"
 
-  # - name: Create 3tier state check playbook
+  # - name: Create eGovFrame state check playbook
   #   awx.awx.job_template:
   #     name: 전자정부프레임워크 웹서비스 - 상태체크
   #     description: 전자정부프레임워크 웹서비스의 서비스 상태를 체크합니다.
   #     job_type: "run"
   #     inventory: Genie Inventory
   #     project: Genie Git Project
-  #     playbook: 3tier/tier_check.yml
+  #     playbook: eGovFrame/eGov_check.yml
   #     credentials:
   #       - "Automation Controller Credential"
   #     state: "present"
@@ -154,14 +154,14 @@
   #     controller_username: admin
   #     controller_password: "{{ admin_password.stdout }}"
 
-  # - name: Create 3tier delete playbook
+  # - name: Create eGovFrame delete playbook
   #   awx.awx.job_template:
   #     name: 전자정부프레임워크 웹서비스 - 삭제
   #     description: 전자정부프레임워크 웹서비스를 삭제합니다.
   #     job_type: "run"
   #     inventory: Genie Inventory
   #     project: Genie Git Project
-  #     playbook: 3tier/tier_destroy.yml
+  #     playbook: eGovFrame/eGov_destroy.yml
   #     credentials:
   #       - "Automation Controller Credential"
   #     state: "present"
