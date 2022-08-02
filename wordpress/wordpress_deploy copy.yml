@@ -2,19 +2,10 @@
 ### Deploy VirtualMachine ###
 - name: Genie를 활용한 Mold VM 배포
   hosts: localhost
-  gather_facts: no
   vars:
-    # instance_nm: "wordpress-deploy-vm"
-    base_path: "genie"
-    genie_ip: "localhost"
+    instance_nm: "wordpress-deploy-vm"
+  gather_facts: no
   tasks:
-
-  - name: uuid 생성
-    set_fact:
-      uuid: "{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=5') }}"
-  - name: instance명에 uuid 추가
-    set_fact:
-      instance_nm: "{{ instance_name }}-{{ uuid }}"
 
   - name: 가상머신 생성
     cs_instance:
@@ -83,64 +74,6 @@
     with_items:
         - {port: 80, protocol: tcp}
         - {port: 22, protocol: tcp}
-
-  #=============================================================
-
-  - name: AWX 초기 관리자 패스워드 추출
-    shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
-    register: admin_password
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-  - name: Create wordpress state check playbook
-    awx.awx.job_template:
-      name: 워드프레스 - 상태체크 - {{ uuid }}
-      description: 워드프레스의 서비스 상태를 체크합니다.
-      job_type: "run"
-      inventory: Genie Inventory
-      project: Genie Git Project
-      playbook: wordpress/wordpress_check.yml
-      credentials:
-        - "Automation Controller Credential"
-      state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
-      controller_username: admin
-      controller_password: "{{ admin_password.stdout }}"
-      extra_vars: 
-        instance_name: "{{ instance_name }}"
-        uuid: "{{ uuid }}"
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-  - name: Create wordpress delete playbook
-    awx.awx.job_template:
-      name: 워드프레스 - 삭제 - {{ uuid }}
-      description: 워드프레스를 삭제합니다.
-      job_type: "run"
-      inventory: Genie Inventory
-      project: Genie Git Project
-      playbook: wordpress/wordpress_destroy.yml
-      credentials:
-        - "Automation Controller Credential"
-      state: "present"
-      controller_host: "http://{{ genie_ip }}:80"
-      controller_username: admin
-      controller_password: "{{ admin_password.stdout }}"
-      extra_vars: 
-        instance_name: "{{ instance_name }}"
-        uuid: "{{ uuid }}"
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-    
-  - name: Genie job 스케줄러 생성
-    awx.awx.schedule:
-      name: 워드프레스 - 상태체크 - {{ uuid }}
-      state: present
-      unified_job_template: 워드프레스 - 상태체크 - {{ uuid }}
-      rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
-      controller_host: "http://{{ genie_ip }}:80"
-      controller_username: admin
-      controller_password: "{{ admin_password.stdout }}"
-    delegate_to: "{{ lookup('env', 'AC_NETWORK_ADDRESS') }}"
-
-#=============================================================
 
 ### Install Wordpress ###
 - name: Deploy Wordpress
@@ -302,3 +235,33 @@
   - name: Reload Firewall
     systemd: name=firewalld state=reloaded
 
+#=============================================================
+
+- name: 서비스 상태체크 스케줄러 생성
+  hosts: genie_vm
+  vars:
+    base_path: "genie"
+    genie_ip: "localhost"
+  gather_facts: no
+  tasks:
+
+    - name: AWX 초기 관리자 패스워드 추출
+      shell: kubectl get -n awx secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
+      register: admin_password
+
+    - name: 상태체크 job 실행
+      awx.awx.job_launch:
+        job_template: "워드프레스 - 상태체크"
+        controller_host: "http://{{ genie_ip }}:80"
+        controller_username: admin
+        controller_password: "{{ admin_password.stdout }}"
+
+    - name: Genie job 스케줄러 생성
+      awx.awx.schedule:
+        name: 워드프레스 - 상태체크
+        state: present
+        unified_job_template: 워드프레스 - 상태체크
+        rrule: "DTSTART;TZID=Asia/Seoul:20220101T120000 RRULE:FREQ=MINUTELY;INTERVAL=1"
+        controller_host: "http://{{ genie_ip }}:80"
+        controller_username: admin
+        controller_password: "{{ admin_password.stdout }}"
