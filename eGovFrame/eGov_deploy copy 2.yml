@@ -337,7 +337,7 @@
       url: "https://images.ablecloud.io/genie/eGovFrame/ROOT.war"
       dest: "/usr/local/apache-tomcat-9.0.65/webapps/"
 
-  - name: 배포한 DB 가상머신 정보 수집("{{ db_instance_nm }}")
+  - name: 배포한 DB 가상머신 정보 수집 ({{ db_instance_nm }})
     cs_instance_info:
       api_url: "{{ lookup('env', 'MOLD_API_URL') }}"
       api_key: "{{ lookup('env', 'MOLD_API_KEY') }}"
