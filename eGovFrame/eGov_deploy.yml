@@ -38,7 +38,8 @@
       groups:
         - web_deployVmIp
 
-  - import_playbook: eGov_install.yml
+  - name: eGov_install
+    import_playbook: eGov_install.yml
     vars:
       db_instance_name: "db-deploy-vm-9qkj6"
       was_instance_name: "was-deploy-vm-9qkj6"
